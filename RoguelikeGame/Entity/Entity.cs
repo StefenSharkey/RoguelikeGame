@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Entity
+namespace EntityNamespace
 {
     class Entity : Sprite
     {
