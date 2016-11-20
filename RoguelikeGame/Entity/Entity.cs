@@ -40,6 +40,13 @@ namespace EntityNamespace
         protected Vector2 speed = Vector2.Zero;
         protected Vector2 direction = Vector2.Zero;
 
+        public Entity(string assetName, int startPosX, int startPosY)
+        {
+            this.assetName = assetName;
+            this.startPosX = startPosX;
+            this.startPosY = startPosY;
+        }
+
         public virtual void LoadContent(ContentManager contentManager)
         {
             position = new Vector2(startPosX, startPosY);

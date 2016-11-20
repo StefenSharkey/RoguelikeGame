@@ -5,11 +5,8 @@ namespace EntityNamespace
 {
     class Player : Entity
     {
-        public Player(string assetName, int startPosX, int startPosY)
+        public Player(string assetName, int startPosX, int startPosY) : base(assetName, startPosX, startPosY)
         {
-            this.assetName = assetName;
-            this.startPosX = startPosX;
-            this.startPosY = startPosY;
         }
 
         public override void Update(GameTime gameTime)
