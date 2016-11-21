@@ -4,7 +4,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace RoguelikeGame
+using System.Collections.Generic;
+
+namespace RoguelikeGameNamespace
 {
     /// <summary>
     /// This is the main type for your game.
@@ -17,14 +19,9 @@ namespace RoguelikeGame
         private SpriteFont font;
 
         private Player player;
-        private Texture2D enemy;
+        public static List<Enemy> enemies = new List<Enemy>();
 
         private double health = 100.0;
-
-        private bool movingUp = false;
-        private bool movingLeft = false;
-        private bool movingDown = false;
-        private bool movingRight = false;
 
         public RoguelikeGame()
         {
@@ -42,6 +39,8 @@ namespace RoguelikeGame
         {
             // TODO: Add your initialization logic here
             player = new Player("Player", 0, 0);
+            enemies.Add(new Enemy("Enemy", 120, 80));
+            enemies.Add(new Enemy("Enemy", 100, 100));
             base.Initialize();
         }
 
@@ -56,7 +55,12 @@ namespace RoguelikeGame
 
             // TODO: use this.Content to load your game content here
             player.LoadContent(this.Content);
-            enemy = Content.Load<Texture2D>("Enemy");
+
+            foreach (Enemy enemy in enemies)
+            {
+                enemy.LoadContent(this.Content);
+            }
+
             font = Content.Load<SpriteFont>("Health");
         }
 
@@ -84,6 +88,12 @@ namespace RoguelikeGame
 
             // TODO: Add your update logic here
             player.Update(gameTime);
+
+            foreach (Enemy enemy in enemies)
+            {
+                enemy.Update(gameTime);
+            }
+
             base.Update(gameTime);
         }
 
@@ -100,7 +110,12 @@ namespace RoguelikeGame
             spriteBatch.Begin();
 
             player.Draw(this.spriteBatch);
-            spriteBatch.Draw(enemy, new Rectangle(100, 100, 20, 20), Color.White);
+
+            foreach (Enemy enemy in enemies)
+            {
+                enemy.Draw(this.spriteBatch);
+            }
+
             spriteBatch.DrawString(font, healthText, new Vector2(0, graphics.GraphicsDevice.PresentationParameters.Bounds.Height - font.MeasureString(healthText).Y), Color.Black);
 
             spriteBatch.End();

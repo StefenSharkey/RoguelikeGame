@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RoguelikeGame
+namespace RoguelikeGameNamespace
 {
 #if WINDOWS || LINUX
     /// <summary>

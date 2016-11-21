@@ -4,13 +4,14 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace EntityNamespace
 {
-    class Sprite
+    public class Sprite
     {
         //The current position of the Sprite
         public Vector2 position = new Vector2(0, 0);
 
         //The texture object used when drawing the sprite
-        private Texture2D spriteTexture;
+        protected Texture2D spriteTexture;
+        protected Color color = Color.White;
 
         //The asset name for the Sprite's Texture
         public string assetName
@@ -57,11 +58,11 @@ namespace EntityNamespace
         }
 
         //Draw the sprite to the screen
-        public void Draw(SpriteBatch spriteBatch)
+        public virtual void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(spriteTexture, position,
                 new Rectangle(0, 0, spriteTexture.Width, spriteTexture.Height),
-                Color.White, 0.0f, Vector2.Zero, scale, SpriteEffects.None, 0);
+                color, 0.0f, Vector2.Zero, scale, SpriteEffects.None, 0);
         }
     }
 }
