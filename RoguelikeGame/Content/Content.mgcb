@@ -37,9 +37,15 @@
 /processorParam:TextureFormat=Color
 /build:Enemy.png
 
-#begin Health.spritefont
+#begin Text.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:TextureFormat=Compressed
-/build:Health.spritefont
+/build:Text.spritefont
+
+#begin Title.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Compressed
+/build:Title.spritefont
 
