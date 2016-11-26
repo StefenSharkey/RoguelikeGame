@@ -23,6 +23,14 @@ namespace RoguelikeGameNamespace
 
         private double health = 100.0;
 
+        private enum GameState
+        {
+            StartMenu,
+            Loading,
+            Playing,
+            Paused
+        }
+
         public RoguelikeGame()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -37,7 +45,8 @@ namespace RoguelikeGameNamespace
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            IsMouseVisible = true;
+
             player = new Player("Player", 0, 0);
             enemies.Add(new Enemy("Enemy", 120, 80));
             enemies.Add(new Enemy("Enemy", 100, 100));
@@ -50,10 +59,8 @@ namespace RoguelikeGameNamespace
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
             player.LoadContent(this.Content);
 
             foreach (Enemy enemy in enemies)
@@ -70,7 +77,6 @@ namespace RoguelikeGameNamespace
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
             Content.Unload();
         }
 
@@ -86,7 +92,6 @@ namespace RoguelikeGameNamespace
                 Exit();
             }
 
-            // TODO: Add your update logic here
             player.Update(gameTime);
 
             foreach (Enemy enemy in enemies)
@@ -106,7 +111,6 @@ namespace RoguelikeGameNamespace
             string healthText = "Health: " + health;
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
             spriteBatch.Begin();
 
             player.Draw(this.spriteBatch);
