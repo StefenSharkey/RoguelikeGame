@@ -74,6 +74,11 @@ namespace EntityNamespace
 
         public virtual void Update(GameTime gameTime)
         {
+            foreach (Entity entity in RoguelikeGame.enemies)
+            {
+                CheckCollisions(entity);
+            }
+
             base.Update(gameTime, speed, direction);
         }
 

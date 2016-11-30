@@ -18,12 +18,7 @@ namespace EntityNamespace
             UpdateMovement(currentKeyboardState);
             previousKeyboardState = currentKeyboardState;
 
-            foreach (Entity entity in RoguelikeGame.enemies)
-            {
-                CheckCollisions(entity);
-            }
-
-            base.Update(gameTime, speed, direction);
+            base.Update(gameTime);
         }
 
         private void UpdateMovement(KeyboardState currentKeyboardState)
