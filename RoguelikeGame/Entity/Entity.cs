@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 
 using System;
 using System.Diagnostics;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace EntityNamespace
 {
@@ -49,15 +50,18 @@ namespace EntityNamespace
             get;
             protected set;
         } = true;
+
+        [Flags]
         protected enum Direction
         {
-            Top,
-            Left,
-            Bottom,
-            Right,
-            None
+            None = 0,
+            Top = 1 << 0,
+            Left = 1 << 1,
+            Bottom = 1 << 2,
+            Right = 1 << 3
         }
-        protected Direction collisionDirection = Direction.None;
+        protected Direction boundsCollisionDirection = Direction.None;
+        protected Direction entityCollisionDirection = Direction.None;
 
         public Entity(string assetName, int startPosX, int startPosY)
         {
@@ -74,10 +78,16 @@ namespace EntityNamespace
 
         public virtual void Update(GameTime gameTime)
         {
+            CheckBoundsCollisions();
+
+            Direction collisionDirection = Direction.None;
+
             foreach (Entity entity in RoguelikeGame.enemies)
             {
-                CheckCollisions(entity);
+                collisionDirection |= CheckCollisions(entity);
             }
+
+            entityCollisionDirection = collisionDirection;
 
             base.Update(gameTime, speed, direction);
         }
@@ -89,7 +99,7 @@ namespace EntityNamespace
             Update(gameTime);
         }
 
-        protected void CheckCollisions(Entity entity)
+        protected Direction CheckCollisions(Entity entity)
         {
             if (this != entity && entity.collidable && Intersects(entity))
             {
@@ -99,30 +109,79 @@ namespace EntityNamespace
                 {
                     // Left edge is colliding.
                     position.X = entity.position.X + entity.size.Width;
-                    collisionDirection = Direction.Left;
+                    return Direction.Left;
                 }
                 else if (angle <= 135.0)
                 {
                     // Bottom edge is colliding.
                     position.Y = entity.position.Y - size.Height;
-                    collisionDirection = Direction.Bottom;
+                    return Direction.Bottom;
                 }
                 else if (angle <= 225.0)
                 {
                     // Right edge is colliding.
                     position.X = entity.position.X - size.Width;
-                    collisionDirection = Direction.Right;
+                    return Direction.Right;
                 }
                 else
                 {
                     // Top edge is colliding.
                     position.Y = entity.position.Y + entity.size.Height;
-                    collisionDirection = Direction.Top;
+                    return Direction.Top;
                 }
             }
             else
             {
-                collisionDirection = Direction.None;
+                return Direction.None;
+            }
+        }
+
+        protected void CheckBoundsCollisions()
+        {
+            Viewport maxBounds = RoguelikeGame.graphics.GraphicsDevice.Viewport;
+
+            // Left edge is colliding.
+            if (position.X <= 0)
+            {
+                position.X = 0;
+                boundsCollisionDirection |= Direction.Left;
+            }
+            else
+            {
+                boundsCollisionDirection &= ~Direction.Left;
+            }
+
+            // Top edge is colliding.
+            if (position.Y <= 0)
+            {
+                position.Y = 0;
+                boundsCollisionDirection |= Direction.Top;
+            }
+            else
+            {
+                boundsCollisionDirection &= ~Direction.Top;
+            }
+
+            // Right edge is colliding.
+            if ((position.X + size.Width) >= maxBounds.Width)
+            {
+                position.X = maxBounds.Width - size.Width;
+                boundsCollisionDirection |= Direction.Right;
+            }
+            else
+            {
+                boundsCollisionDirection &= ~Direction.Right;
+            }
+
+            // Bottom edge is colliding.
+            if ((position.Y + size.Height) >= maxBounds.Height)
+            {
+                position.Y = maxBounds.Height - size.Height;
+                boundsCollisionDirection |= Direction.Bottom;
+            }
+            else
+            {
+                boundsCollisionDirection &= ~Direction.Bottom;
             }
         }
 

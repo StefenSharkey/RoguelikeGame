@@ -13,7 +13,7 @@ namespace RoguelikeGameNamespace
     /// </summary>
     public class RoguelikeGame : Game
     {
-        GraphicsDeviceManager graphics;
+        public static GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
         private SpriteFont titleFont;
