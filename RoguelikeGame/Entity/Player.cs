@@ -19,8 +19,6 @@ namespace EntityNamespace
             KeyboardState currentKeyboardState = Keyboard.GetState();
             UpdateMovement(currentKeyboardState);
             previousKeyboardState = currentKeyboardState;
-            Trace.WriteLine("Bounds: " + boundsCollisionDirection);
-            Trace.WriteLine("Entity: " + entityCollisionDirection);
 
             base.Update(gameTime);
         }
