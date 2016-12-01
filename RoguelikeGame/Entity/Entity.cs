@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using System;
+using System.Diagnostics;
+using System.Threading;
 
 namespace EntityNamespace
 {
@@ -47,8 +49,8 @@ namespace EntityNamespace
 
         protected KeyboardState previousKeyboardState;
 
-        protected Vector2 speed = Vector2.Zero;
-        protected Vector2 direction = Vector2.Zero;
+        public Vector2 speed = Vector2.Zero;
+        public Vector2 direction = Vector2.Zero;
 
         public bool collidable
         {
@@ -57,7 +59,7 @@ namespace EntityNamespace
         } = true;
 
         [Flags]
-        protected enum Direction
+        public enum Direction
         {
             None = 0,
             Top = 1 << 0,
@@ -67,6 +69,27 @@ namespace EntityNamespace
         }
         protected Direction boundsCollisionDirection = Direction.None;
         protected Direction entityCollisionDirection = Direction.None;
+
+        public bool isKnockback = false;
+        public Direction knockbackDirection
+        {
+            get;
+            protected set;
+        } = Direction.None;
+        protected int knockbackSpeed;
+        protected double knockbackDistanceElapsed;
+        protected double knockbackDistanceTotal;
+        public bool isKnockbackImmune = false;
+        public double knockbackImmunityStart
+        {
+            get;
+            protected set;
+        }
+        protected double knockbackImmunityEnd = 2.0;
+
+
+        protected double collisionKnockbackDistance;
+        protected int collisionKnockbackSpeed;
 
         public Entity(string assetName, int startPosX, int startPosY)
         {
@@ -95,6 +118,69 @@ namespace EntityNamespace
 
             entityCollisionDirection = collisionDirection;
 
+            // Knockback
+            if (isKnockback)
+            {
+                if (knockbackDistanceElapsed <= knockbackDistanceTotal)
+                {
+
+                    knockbackDistanceElapsed += Math.Sqrt(Math.Pow(position.X - prevPosition.X, 2) + Math.Pow(position.Y - prevPosition.Y, 2));
+
+                    switch (knockbackDirection)
+                    {
+                        case Direction.Left:
+                            direction.X += MOVE_LEFT;
+                            speed.X += knockbackSpeed;
+
+                            if (boundsCollisionDirection == Direction.Left || entityCollisionDirection == Direction.Left)
+                            {
+                                knockbackDistanceElapsed = knockbackDistanceTotal;
+                            }
+
+                            break;
+                        case Direction.Right:
+                            direction.X += MOVE_RIGHT;
+                            speed.X += knockbackSpeed;
+
+                            if (boundsCollisionDirection == Direction.Right || entityCollisionDirection == Direction.Right)
+                            {
+                                knockbackDistanceElapsed = knockbackDistanceTotal;
+                            }
+
+                            break;
+                        case Direction.Top:
+                            direction.Y += MOVE_UP;
+                            speed.Y += knockbackSpeed;
+
+                            if (boundsCollisionDirection == Direction.Top || entityCollisionDirection == Direction.Top)
+                            {
+                                knockbackDistanceElapsed = knockbackDistanceTotal;
+                            }
+
+                            break;
+                        case Direction.Bottom:
+                            direction.Y += MOVE_DOWN;
+                            speed.Y += knockbackSpeed;
+
+                            if (boundsCollisionDirection == Direction.Bottom || entityCollisionDirection == Direction.Bottom)
+                            {
+                                knockbackDistanceElapsed = knockbackDistanceTotal;
+                            }
+
+                            break;
+                    }
+                }
+                else
+                {
+                    isKnockback = false;
+                }
+            }
+
+            if (isKnockbackImmune && ((DateTime.Now - DateTime.MinValue).TotalSeconds - knockbackImmunityStart) >= knockbackImmunityEnd)
+            {
+                isKnockbackImmune = false;
+            }
+
             base.Update(gameTime, speed, direction);
         }
 
@@ -112,6 +198,7 @@ namespace EntityNamespace
             if (this != entity && entity.collidable && Intersects(entity))
             {
                 double angle = GetAngleRelativeTo(entity);
+                Vector2 angleVector = new Vector2((float)Math.Cos(angle), (float)-Math.Sin(angle));
 
                 if (angle <= 45.0 || angle > 315.0)
                 {
@@ -134,7 +221,7 @@ namespace EntityNamespace
                     collisionDirection = Direction.Top;
                 }
 
-                entity.OnCollide(this, collisionDirection);
+                entity.OnCollide(this, collisionDirection, angle);
             }
 
             return collisionDirection;
@@ -191,8 +278,16 @@ namespace EntityNamespace
 
         public bool Intersects(Entity entity)
         {
-            Rectangle rectangle1 = new Rectangle((int) position.X, (int) position.Y, size.Width + 1, size.Height + 1);
-            Rectangle rectangle2 = new Rectangle((int) entity.position.X, (int) entity.position.Y, entity.size.Width + 1, entity.size.Height + 1);
+            Rectangle rectangle1 = new Rectangle((int)position.X, (int)position.Y, size.Width, size.Height);
+            Rectangle rectangle2 = new Rectangle((int)entity.position.X, (int)entity.position.Y, entity.size.Width, entity.size.Height);
+
+            return rectangle1.Intersects(rectangle2);
+        }
+
+        public bool Intersects(Vector2 position, Rectangle size)
+        {
+            Rectangle rectangle1 = new Rectangle((int)this.position.X, (int)this.position.Y, this.size.Width, this.size.Height);
+            Rectangle rectangle2 = new Rectangle((int)position.X, (int)position.Y, size.Width, size.Height);
 
             return rectangle1.Intersects(rectangle2);
         }
@@ -209,9 +304,30 @@ namespace EntityNamespace
             return angle;
         }
 
-        protected virtual void OnCollide(Entity entity, Direction collisionDirection)
+        protected virtual void OnCollide(Entity entity, Direction collisionDirection, double angle)
         {
 
+        }
+
+        public void Knockback(Direction knockbackDirection, double distance, int speed)
+        {
+            if (!isKnockbackImmune)
+            {
+                isKnockback = true;
+                this.knockbackDirection = knockbackDirection;
+                knockbackDistanceElapsed = 0.0;
+                knockbackDistanceTotal = distance;
+                knockbackSpeed = speed;
+                isKnockbackImmune = true;
+                knockbackImmunityStart = (DateTime.Now - DateTime.MinValue).TotalSeconds;
+            }
+        }
+
+        public void CancelKnockback()
+        {
+            Console.WriteLine(this + ".CancelKnockback()");
+            isKnockback = false;
+            knockbackDistanceTotal = 0.0;
         }
     }
 }
