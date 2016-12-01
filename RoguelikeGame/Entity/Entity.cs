@@ -83,6 +83,7 @@ namespace EntityNamespace
 
         public virtual void Update(GameTime gameTime)
         {
+            // Collision
             CheckBoundsCollisions();
 
             Direction collisionDirection = Direction.None;
@@ -106,6 +107,8 @@ namespace EntityNamespace
 
         protected Direction CheckCollisions(Entity entity)
         {
+            Direction collisionDirection = Direction.None;
+
             if (this != entity && entity.collidable && Intersects(entity))
             {
                 double angle = GetAngleRelativeTo(entity);
@@ -113,32 +116,28 @@ namespace EntityNamespace
                 if (angle <= 45.0 || angle > 315.0)
                 {
                     // Left edge is colliding.
-                    position.X = entity.position.X + entity.size.Width;
-                    return Direction.Left;
+                    collisionDirection = Direction.Left;
                 }
                 else if (angle <= 135.0)
                 {
                     // Bottom edge is colliding.
-                    position.Y = entity.position.Y - size.Height;
-                    return Direction.Bottom;
+                    collisionDirection = Direction.Bottom;
                 }
                 else if (angle <= 225.0)
                 {
                     // Right edge is colliding.
-                    position.X = entity.position.X - size.Width;
-                    return Direction.Right;
+                    collisionDirection = Direction.Right;
                 }
                 else
                 {
                     // Top edge is colliding.
-                    position.Y = entity.position.Y + entity.size.Height;
-                    return Direction.Top;
+                    collisionDirection = Direction.Top;
                 }
+
+                entity.OnCollide(this, collisionDirection);
             }
-            else
-            {
-                return Direction.None;
-            }
+
+            return collisionDirection;
         }
 
         protected void CheckBoundsCollisions()
@@ -208,6 +207,11 @@ namespace EntityNamespace
             angle = angle > 0 ? angle : 360 + angle;
 
             return angle;
+        }
+
+        protected virtual void OnCollide(Entity entity, Direction collisionDirection)
+        {
+
         }
     }
 }
