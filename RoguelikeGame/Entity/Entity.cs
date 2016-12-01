@@ -11,6 +11,12 @@ namespace EntityNamespace
 {
     public class Entity : Sprite
     {
+        public double health
+        {
+            get;
+            protected set;
+        } = 100.0;
+
         public int startPosX
         {
             get;

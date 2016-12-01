@@ -22,8 +22,6 @@ namespace RoguelikeGameNamespace
         private Player player;
         public static List<Enemy> enemies = new List<Enemy>();
 
-        private double health = 100.0;
-
         private enum GameState
         {
             StartMenu,
@@ -165,7 +163,7 @@ namespace RoguelikeGameNamespace
                     spriteBatch.DrawString(textFont, exitButtonText, exitButtonPos, Color.Black);
                     break;
                 case GameState.Playing:
-                    string healthText = "Health: " + health;
+                    string healthText = "Health: " + player.health;
                     player.Draw(this.spriteBatch);
 
                     foreach (Enemy enemy in enemies)
