@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using RoguelikeGameNamespace;
+
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 namespace EntityNamespace
@@ -48,6 +50,23 @@ namespace EntityNamespace
                     direction.X = MOVE_RIGHT;
                 }
             }
+        }
+
+        public override void OnDamage(double damage)
+        {
+            if (!isImmune)
+            {
+                base.OnDamage(damage);
+
+                SetDamageImmune(2.0);
+            }
+        }
+
+        protected override void OnDeath()
+        {
+            base.OnDeath();
+
+            RoguelikeGame.currentGameState = RoguelikeGame.GameState.Paused;
         }
     }
 }

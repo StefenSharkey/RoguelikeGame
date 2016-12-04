@@ -6,16 +6,19 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 using System;
+using System.Threading.Tasks;
 
 namespace EntityNamespace
 {
     public class Entity : Sprite
     {
-        public double health
+        public double health = 100.0;
+
+        public bool isImmune
         {
             get;
             protected set;
-        } = 100.0;
+        } = false;
 
         public int startPosX
         {
@@ -94,6 +97,12 @@ namespace EntityNamespace
             }
 
             entityCollisionDirection = collisionDirection;
+
+            // Death
+            if (IsDead())
+            {
+                OnDeath();
+            }
 
             base.Update(gameTime, speed, direction);
         }
@@ -211,7 +220,51 @@ namespace EntityNamespace
 
         protected virtual void OnCollide(Entity entity, Direction collisionDirection)
         {
+            if (collisionDirection == Direction.Left)
+            {
+                // Left edge is colliding.
+                entity.position.X = position.X + size.Width;
+            }
+            else if (collisionDirection == Direction.Right)
+            {
+                // Right edge is colliding.
+                entity.position.X = position.X - entity.size.Width;
+            }
 
+            if (collisionDirection == Direction.Top)
+            {
+                // Top edge is colliding.
+                entity.position.Y = position.Y + size.Height;
+            }
+            else if (collisionDirection == Direction.Bottom)
+            {
+                // Bottom edge is colliding.
+                entity.position.Y = position.Y - entity.size.Height;
+            }
+        }
+
+        public virtual void OnDamage(double damage)
+        {
+            health -= damage;
+        }
+
+        protected async void SetDamageImmune(double seconds)
+        {
+            isImmune = true;
+
+            await Task.Delay((int)(seconds * 1000.0));
+
+            isImmune = false;
+        }
+
+        protected virtual void OnDeath()
+        {
+
+        }
+
+        public bool IsDead()
+        {
+            return health <= 0.0;
         }
     }
 }

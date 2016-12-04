@@ -1,8 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-
-using System;
-
-namespace EntityNamespace
+﻿namespace EntityNamespace
 {
     public class Enemy : Entity
     {
@@ -14,26 +10,9 @@ namespace EntityNamespace
         {
             base.OnCollide(entity, collisionDirection);
 
-            if (collisionDirection == Direction.Left)
+            if (entity is Player)
             {
-                // Left edge is colliding.
-                entity.position.X = position.X + size.Width;
-            }
-            else if (collisionDirection == Direction.Right)
-            {
-                // Right edge is colliding.
-                entity.position.X = position.X - entity.size.Width;
-            }
-
-            if (collisionDirection == Direction.Top)
-            {
-                // Top edge is colliding.
-                entity.position.Y = position.Y + size.Height;
-            }
-            else if (collisionDirection == Direction.Bottom)
-            {
-                // Bottom edge is colliding.
-                entity.position.Y = position.Y - entity.size.Height;
+                entity.OnDamage(10.0);
             }
         }
     }
