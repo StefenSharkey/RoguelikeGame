@@ -22,22 +22,25 @@ namespace RoguelikeGameNamespace
         private Player player;
         public static List<Enemy> enemies = new List<Enemy>();
 
-        private enum GameState
+        public enum GameState
         {
             StartMenu,
             Loading,
             Playing,
-            Paused
+            Paused,
+            Dead
         }
-        private GameState currentGameState = GameState.StartMenu;
+        public static GameState currentGameState = GameState.StartMenu;
 
         private Vector2 titlePos;
         private Vector2 startButtonPos;
         private Vector2 exitButtonPos;
+        private Vector2 deadPos;
 
         private string titleText = "Roguelike Game";
         private string startButtonText = "Start";
         private string exitButtonText = "Exit";
+        private string deadText = "You died!";
 
         private Rectangle startButtonRectangle;
         private Rectangle exitButtonRectangle;
@@ -87,6 +90,7 @@ namespace RoguelikeGameNamespace
             titlePos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(titleText).X) / 2, 0);
             startButtonPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(startButtonText).X) / 2, titleFont.MeasureString(titleText).Y);
             exitButtonPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(exitButtonText).X) / 2, startButtonPos.Y + textFont.MeasureString(startButtonText).Y);
+            deadPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(deadText).X) / 2, 0);
 
             startButtonRectangle = new Rectangle((int)startButtonPos.X, (int)startButtonPos.Y, (int)textFont.MeasureString(startButtonText).X, (int)textFont.MeasureString(startButtonText).Y);
             exitButtonRectangle = new Rectangle((int)exitButtonPos.X, (int)exitButtonPos.Y, (int)textFont.MeasureString(exitButtonText).X, (int)textFont.MeasureString(exitButtonText).Y);
@@ -115,6 +119,7 @@ namespace RoguelikeGameNamespace
 
             switch (currentGameState)
             {
+                case GameState.Dead:
                 case GameState.StartMenu:
                     MouseState mouseState = Mouse.GetState();
                     Point mousePos = new Point(mouseState.X, mouseState.Y);
@@ -138,6 +143,11 @@ namespace RoguelikeGameNamespace
                     foreach (Enemy enemy in enemies)
                     {
                         enemy.Update(gameTime);
+                    }
+
+                    if (player.health <= 0.0)
+                    {
+                        currentGameState = GameState.Dead;
                     }
                     break;
             }
@@ -172,6 +182,11 @@ namespace RoguelikeGameNamespace
                     }
 
                     spriteBatch.DrawString(textFont, healthText, new Vector2(0, graphics.GraphicsDevice.Viewport.Height - textFont.MeasureString(healthText).Y), Color.Black);
+                    break;
+                case GameState.Dead:
+                    spriteBatch.DrawString(titleFont, deadText, deadPos, Color.Black);
+                    spriteBatch.DrawString(textFont, startButtonText, startButtonPos, Color.Black);
+                    spriteBatch.DrawString(textFont, exitButtonText, exitButtonPos, Color.Black);
                     break;
             }
 

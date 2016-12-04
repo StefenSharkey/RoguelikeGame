@@ -61,12 +61,5 @@ namespace EntityNamespace
                 SetDamageImmune(2.0);
             }
         }
-
-        protected override void OnDeath()
-        {
-            base.OnDeath();
-
-            RoguelikeGame.currentGameState = RoguelikeGame.GameState.Paused;
-        }
     }
 }
