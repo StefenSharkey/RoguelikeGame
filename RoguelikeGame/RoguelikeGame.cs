@@ -32,6 +32,9 @@ namespace RoguelikeGameNamespace {
         private KeyboardState currentKeyboardState;
         private KeyboardState prevKeyboardState;
 
+        private GamePadState currentGamePadState;
+        private GamePadState prevGamePadState;
+
         private Vector2 titlePos;
         private Vector2 pausePos;
         private Vector2 startButtonPos;
@@ -110,18 +113,19 @@ namespace RoguelikeGameNamespace {
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime) {
             currentKeyboardState = Keyboard.GetState();
+            currentGamePadState = GamePad.GetState(PlayerIndex.One);
 
             switch (currentGameState) {
                 case GameState.Dead:
                 case GameState.StartMenu:
-                    if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || currentKeyboardState.IsKeyDown(Keys.Escape)) {
+                    if (currentGamePadState.Buttons.Back == ButtonState.Pressed || currentKeyboardState.IsKeyDown(Keys.Escape)) {
                         Exit();
                     }
 
                     MouseState mouseState = Mouse.GetState();
                     Point mousePos = new Point(mouseState.X, mouseState.Y);
 
-                    if (mouseState.LeftButton == ButtonState.Pressed) {
+                    if (currentGamePadState.Buttons.Start == ButtonState.Pressed || mouseState.LeftButton == ButtonState.Pressed) {
                         if (startButtonRectangle.Contains(mousePos)) {
                             currentGameState = GameState.Playing;
                         } else if (exitButtonRectangle.Contains(mousePos)) {
@@ -131,13 +135,11 @@ namespace RoguelikeGameNamespace {
 
                     break;
                 case GameState.Playing:
-                    if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed || currentKeyboardState.IsKeyDown(Keys.Escape)) {
-                        if (!prevKeyboardState.IsKeyDown(Keys.Escape)) {
-                            currentGameState = GameState.Paused;
-                        }
+                    if ((currentGamePadState.Buttons.Start == ButtonState.Pressed && prevGamePadState.Buttons.Start != ButtonState.Pressed) || (currentKeyboardState.IsKeyDown(Keys.Escape) && !prevKeyboardState.IsKeyDown(Keys.Escape))) {
+                        currentGameState = GameState.Paused;
                     }
 
-                    player.Update(gameTime);
+                    player.Update(gameTime, currentKeyboardState, currentGamePadState);
 
                     foreach (Enemy enemy in enemies) {
                         enemy.Update(gameTime);
@@ -148,16 +150,15 @@ namespace RoguelikeGameNamespace {
                     }
                     break;
                 case GameState.Paused:
-                    if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed || currentKeyboardState.IsKeyDown(Keys.Escape)) {
-                        if (!prevKeyboardState.IsKeyDown(Keys.Escape)) {
-                            currentGameState = GameState.Playing;
-                        }
+                    if ((currentGamePadState.Buttons.Start == ButtonState.Pressed && prevGamePadState.Buttons.Start != ButtonState.Pressed) || (currentKeyboardState.IsKeyDown(Keys.Escape) && !prevKeyboardState.IsKeyDown(Keys.Escape))) {
+                        currentGameState = GameState.Playing;
                     }
 
                     break;
             }
 
             prevKeyboardState = currentKeyboardState;
+            prevGamePadState = currentGamePadState;
 
             base.Update(gameTime);
         }

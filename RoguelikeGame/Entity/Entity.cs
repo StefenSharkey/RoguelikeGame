@@ -41,8 +41,6 @@ namespace EntityNamespace {
 
         protected State currentEntityState = State.Walking;
 
-        protected KeyboardState previousKeyboardState;
-
         protected Vector2 speed = Vector2.Zero;
         protected Vector2 direction = Vector2.Zero;
 
