@@ -32,12 +32,17 @@ namespace RoguelikeGameNamespace
         }
         public static GameState currentGameState = GameState.StartMenu;
 
+        private KeyboardState currentKeyboardState;
+        private KeyboardState prevKeyboardState;
+
         private Vector2 titlePos;
+        private Vector2 pausePos;
         private Vector2 startButtonPos;
         private Vector2 exitButtonPos;
         private Vector2 deadPos;
 
         private string titleText = "Roguelike Game";
+        private string pauseText = "Paused";
         private string startButtonText = "Start";
         private string exitButtonText = "Exit";
         private string deadText = "You died!";
@@ -88,6 +93,7 @@ namespace RoguelikeGameNamespace
             textFont = Content.Load<SpriteFont>("Text");
 
             titlePos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(titleText).X) / 2, 0);
+            pausePos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(pauseText).X) / 2, (graphics.GraphicsDevice.Viewport.Height - titleFont.MeasureString(pauseText).Y) / 2);
             startButtonPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(startButtonText).X) / 2, titleFont.MeasureString(titleText).Y);
             exitButtonPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(exitButtonText).X) / 2, startButtonPos.Y + textFont.MeasureString(startButtonText).Y);
             deadPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(deadText).X) / 2, 0);
@@ -112,15 +118,17 @@ namespace RoguelikeGameNamespace
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
-                Exit();
-            }
+            currentKeyboardState = Keyboard.GetState();
 
             switch (currentGameState)
             {
                 case GameState.Dead:
                 case GameState.StartMenu:
+                    if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || currentKeyboardState.IsKeyDown(Keys.Escape))
+                    {
+                        Exit();
+                    }
+
                     MouseState mouseState = Mouse.GetState();
                     Point mousePos = new Point(mouseState.X, mouseState.Y);
 
@@ -138,6 +146,14 @@ namespace RoguelikeGameNamespace
 
                     break;
                 case GameState.Playing:
+                    if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed || currentKeyboardState.IsKeyDown(Keys.Escape))
+                    {
+                        if (!prevKeyboardState.IsKeyDown(Keys.Escape))
+                        {
+                            currentGameState = GameState.Paused;
+                        }
+                    }
+
                     player.Update(gameTime);
 
                     foreach (Enemy enemy in enemies)
@@ -150,7 +166,19 @@ namespace RoguelikeGameNamespace
                         currentGameState = GameState.Dead;
                     }
                     break;
+                case GameState.Paused:
+                    if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed || currentKeyboardState.IsKeyDown(Keys.Escape))
+                    {
+                        if (!prevKeyboardState.IsKeyDown(Keys.Escape))
+                        {
+                            currentGameState = GameState.Playing;
+                        }
+                    }
+
+                    break;
             }
+
+            prevKeyboardState = currentKeyboardState;
 
             base.Update(gameTime);
         }
@@ -172,6 +200,7 @@ namespace RoguelikeGameNamespace
                     spriteBatch.DrawString(textFont, startButtonText, startButtonPos, Color.Black);
                     spriteBatch.DrawString(textFont, exitButtonText, exitButtonPos, Color.Black);
                     break;
+                case GameState.Paused:
                 case GameState.Playing:
                     string healthText = "Health: " + player.health;
                     player.Draw(this.spriteBatch);
@@ -182,6 +211,11 @@ namespace RoguelikeGameNamespace
                     }
 
                     spriteBatch.DrawString(textFont, healthText, new Vector2(0, graphics.GraphicsDevice.Viewport.Height - textFont.MeasureString(healthText).Y), Color.Black);
+
+                    if (currentGameState == GameState.Paused)
+                    {
+                        spriteBatch.DrawString(titleFont, pauseText, pausePos, Color.Black);
+                    }
                     break;
                 case GameState.Dead:
                     spriteBatch.DrawString(titleFont, deadText, deadPos, Color.Black);
