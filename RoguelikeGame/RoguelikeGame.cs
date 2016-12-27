@@ -3,8 +3,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-
-using System;
 using System.Collections.Generic;
 
 namespace RoguelikeGameNamespace {
@@ -41,20 +39,12 @@ namespace RoguelikeGameNamespace {
             private set;
         } = false;
 
-        private Vector2 titlePos;
-        private Vector2 pausePos;
-        private Vector2 startButtonPos;
-        private Vector2 exitButtonPos;
-        private Vector2 deadPos;
+        private Button startButton;
+        private Button exitButton;
 
-        private string titleText = "Roguelike Game";
-        private string pauseText = "Paused";
-        private string startButtonText = "Start";
-        private string exitButtonText = "Exit";
-        private string deadText = "You died!";
-
-        private Rectangle startButtonRectangle;
-        private Rectangle exitButtonRectangle;
+        private Label titleLabel;
+        private Label pauseLabel;
+        private Label deadLabel;
 
         public RoguelikeGame() {
             graphics = new GraphicsDeviceManager(this);
@@ -94,14 +84,34 @@ namespace RoguelikeGameNamespace {
             titleFont = Content.Load<SpriteFont>("Title");
             textFont = Content.Load<SpriteFont>("Text");
 
-            titlePos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(titleText).X) / 2, 0);
-            pausePos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(pauseText).X) / 2, (graphics.GraphicsDevice.Viewport.Height - titleFont.MeasureString(pauseText).Y) / 2);
-            startButtonPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(startButtonText).X) / 2, titleFont.MeasureString(titleText).Y + 5);
-            exitButtonPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(exitButtonText).X) / 2, startButtonPos.Y + textFont.MeasureString(startButtonText).Y + 5);
-            deadPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(deadText).X) / 2, 0);
+            titleLabel = new Label();
+            titleLabel.spriteFont = titleFont;
+            titleLabel.text = "Roguelike Game";
+            titleLabel.position = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleLabel.spriteFont.MeasureString(titleLabel.text).X) / 2, 0);
 
-            startButtonRectangle = new Rectangle((int) startButtonPos.X, (int) startButtonPos.Y, (int) textFont.MeasureString(startButtonText).X, (int) textFont.MeasureString(startButtonText).Y);
-            exitButtonRectangle = new Rectangle((int) exitButtonPos.X, (int) exitButtonPos.Y, (int) textFont.MeasureString(exitButtonText).X, (int) textFont.MeasureString(exitButtonText).Y);
+            pauseLabel = new Label();
+            pauseLabel.spriteFont = textFont;
+            pauseLabel.text = "Paused";
+            pauseLabel.position = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleLabel.spriteFont.MeasureString(pauseLabel.text).X) / 2, (graphics.GraphicsDevice.Viewport.Height - titleLabel.spriteFont.MeasureString(pauseLabel.text).Y) / 2);
+
+            deadLabel = new Label();
+            deadLabel.spriteFont = textFont;
+            deadLabel.text = "You died!";
+            deadLabel.position = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleLabel.spriteFont.MeasureString(deadLabel.text).X) / 2, 0);
+
+            startButton = new Button();
+            startButton.text = "Start";
+            startButton.position = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(startButton.text).X) / 2, titleLabel.spriteFont.MeasureString(titleLabel.text).Y + 5);
+            startButton.rectangle = new Rectangle((int) startButton.position.X, (int) startButton.position.Y, (int) textFont.MeasureString(startButton.text).X, (int) textFont.MeasureString(startButton.text).Y);
+            startButton.prevButton = exitButton;
+            startButton.nextButton = exitButton;
+
+            exitButton = new Button();
+            exitButton.text = "Exit";
+            exitButton.position = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(exitButton.text).X) / 2, startButton.position.Y + textFont.MeasureString(startButton.text).Y + 5);
+            exitButton.rectangle = new Rectangle((int) exitButton.position.X, (int) exitButton.position.Y, (int) textFont.MeasureString(exitButton.text).X, (int) textFont.MeasureString(exitButton.text).Y);
+            exitButton.prevButton = startButton;
+            exitButton.nextButton = startButton;
         }
 
         /// <summary>
@@ -134,9 +144,9 @@ namespace RoguelikeGameNamespace {
                     Point mousePos = new Point(mouseState.X, mouseState.Y);
 
                     if (currentGamePadState.Buttons.Start == ButtonState.Pressed || mouseState.LeftButton == ButtonState.Pressed) {
-                        if (startButtonRectangle.Contains(mousePos)) {
+                        if (startButton.rectangle.Contains(mousePos)) {
                             currentGameState = GameState.Playing;
-                        } else if (exitButtonRectangle.Contains(mousePos)) {
+                        } else if (exitButton.rectangle.Contains(mousePos)) {
                             Exit();
                         }
                     }
@@ -182,9 +192,9 @@ namespace RoguelikeGameNamespace {
 
             switch (currentGameState) {
                 case GameState.StartMenu:
-                    spriteBatch.DrawString(titleFont, titleText, titlePos, Color.Black);
-                    spriteBatch.DrawString(textFont, startButtonText, startButtonPos, Color.Black);
-                    spriteBatch.DrawString(textFont, exitButtonText, exitButtonPos, Color.Black);
+                    spriteBatch.DrawString(titleLabel.spriteFont, titleLabel.text, titleLabel.position, Color.Black);
+                    spriteBatch.DrawString(textFont, startButton.text, startButton.position, Color.Black);
+                    spriteBatch.DrawString(textFont, exitButton.text, exitButton.position, Color.Black);
                     break;
                 case GameState.Paused:
                 case GameState.Playing:
@@ -198,13 +208,13 @@ namespace RoguelikeGameNamespace {
                     spriteBatch.DrawString(textFont, healthText, new Vector2(0, graphics.GraphicsDevice.Viewport.Height - textFont.MeasureString(healthText).Y), Color.Black);
 
                     if (currentGameState == GameState.Paused) {
-                        spriteBatch.DrawString(titleFont, pauseText, pausePos, Color.Black);
+                        spriteBatch.DrawString(titleLabel.spriteFont, pauseLabel.text, pauseLabel.position, Color.Black);
                     }
                     break;
                 case GameState.Dead:
-                    spriteBatch.DrawString(titleFont, deadText, deadPos, Color.Black);
-                    spriteBatch.DrawString(textFont, startButtonText, startButtonPos, Color.Black);
-                    spriteBatch.DrawString(textFont, exitButtonText, exitButtonPos, Color.Black);
+                    spriteBatch.DrawString(titleLabel.spriteFont, deadLabel.text, deadLabel.position, Color.Black);
+                    spriteBatch.DrawString(textFont, startButton.text, startButton.position, Color.Black);
+                    spriteBatch.DrawString(textFont, exitButton.text, exitButton.position, Color.Black);
                     break;
             }
 
