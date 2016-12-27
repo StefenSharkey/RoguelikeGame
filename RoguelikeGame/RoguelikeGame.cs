@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+using System;
 using System.Collections.Generic;
 
 namespace RoguelikeGameNamespace {
@@ -34,6 +35,11 @@ namespace RoguelikeGameNamespace {
 
         private GamePadState currentGamePadState;
         private GamePadState prevGamePadState;
+
+        public bool wasUsingGamePad {
+            get;
+            private set;
+        } = false;
 
         private Vector2 titlePos;
         private Vector2 pausePos;
@@ -90,8 +96,8 @@ namespace RoguelikeGameNamespace {
 
             titlePos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(titleText).X) / 2, 0);
             pausePos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(pauseText).X) / 2, (graphics.GraphicsDevice.Viewport.Height - titleFont.MeasureString(pauseText).Y) / 2);
-            startButtonPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(startButtonText).X) / 2, titleFont.MeasureString(titleText).Y);
-            exitButtonPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(exitButtonText).X) / 2, startButtonPos.Y + textFont.MeasureString(startButtonText).Y);
+            startButtonPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(startButtonText).X) / 2, titleFont.MeasureString(titleText).Y + 5);
+            exitButtonPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - textFont.MeasureString(exitButtonText).X) / 2, startButtonPos.Y + textFont.MeasureString(startButtonText).Y + 5);
             deadPos = new Vector2((graphics.GraphicsDevice.Viewport.Width - titleFont.MeasureString(deadText).X) / 2, 0);
 
             startButtonRectangle = new Rectangle((int) startButtonPos.X, (int) startButtonPos.Y, (int) textFont.MeasureString(startButtonText).X, (int) textFont.MeasureString(startButtonText).Y);
@@ -114,6 +120,8 @@ namespace RoguelikeGameNamespace {
         protected override void Update(GameTime gameTime) {
             currentKeyboardState = Keyboard.GetState();
             currentGamePadState = GamePad.GetState(PlayerIndex.One);
+
+            IsUsingGamePad();
 
             switch (currentGameState) {
                 case GameState.Dead:
@@ -139,7 +147,7 @@ namespace RoguelikeGameNamespace {
                         currentGameState = GameState.Paused;
                     }
 
-                    player.Update(gameTime, currentKeyboardState, currentGamePadState);
+                    player.Update(gameTime, currentKeyboardState, currentGamePadState, wasUsingGamePad);
 
                     foreach (Enemy enemy in enemies) {
                         enemy.Update(gameTime);
@@ -203,6 +211,27 @@ namespace RoguelikeGameNamespace {
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        /// <summary>
+        /// Checks if the last user input was through a controller or keyboard.
+        /// </summary>
+        /// <returns>True if the user is using a gamepad; otherwise, false.</returns>
+        private bool IsUsingGamePad() {
+            // TODO: Add analog stick and trigger tolerance.
+            // If the previous and current packet numbers are the same, that means there was no controller input between ticks.
+            if (prevGamePadState.PacketNumber == 0 || prevGamePadState.PacketNumber == currentGamePadState.PacketNumber) {
+                // If the list of pressed keys is not empty, then the user is using a keyboard. Otherwise, return the previous status, which defaults to the keyboard.
+                if (currentKeyboardState.GetPressedKeys().Length != 0) {
+                    wasUsingGamePad = false;
+                    return false;
+                } else {
+                    return wasUsingGamePad;
+                }
+            } else {
+                wasUsingGamePad = true;
+                return true;
+            }
         }
     }
 }
